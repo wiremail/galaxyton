@@ -1,0 +1,11 @@
+:root {
+  --tg-theme-bg-color: #efeff3;
+  --tg-theme-button-color: #2eaddc;
+  --tg-theme-button-text-color: white;
+}
+
+body {
+  font-family: "Roboto";
+  background-color: var(--tg-theme-bg-color);
+  height:100vh;
+}

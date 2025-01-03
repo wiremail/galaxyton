@@ -1,19 +1,26 @@
 import { Dispatch, SetStateAction, useEffect, useState } from 'react'
 import { CHAIN, TonConnectButton, useTonConnectUI, useTonAddress, TonConnectUIProvider, useTonConnectModal } from "@tonconnect/ui-react"
 import { beginCell, toNano } from '@ton/ton'
-import { Address } from '@ton/core'
+import { Address, Cell } from '@ton/core'
 import WebApp from "@twa-dev/sdk"
 import { blue, red, green, grey } from '@mui/material/colors'
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import RemoveCircleOutlineIcon from '@mui/icons-material/RemoveCircleOutline'
 import UpdateIcon from '@mui/icons-material/Update'
 import './style.css'
+import CircularProgress from '@mui/material/CircularProgress'
+import Skeleton from '@mui/material/Skeleton'
+
+const holdOn = (ms: number) => new Promise(r => setTimeout(r, ms ?? 5000))
 
 const dev = import.meta.env.VITE_ENV === 'development'
 const host = dev ? import.meta.env.VITE_HOST_DEV : import.meta.env.VITE_HOST
 const defaultUserId = dev ? 252672087 : 0
 const userId = WebApp?.initDataUnsafe?.user?.id || defaultUserId
 
+function isAdmin() {
+  return [252672087, 275294536, 6915261864, 7377461500, 6485072691].includes(userId)
+}
 
 const fDate = (d: string) => {
   const date = new Date(d)
@@ -38,8 +45,11 @@ const Wallet: React.FC<Props> = ({
   const userFriendlyAddress = useTonAddress()
   const [walletBalance, setWalletBalance] = useState(0)
   const [transactions, setTransactions] = useState<any>([])
+  const [updating, setUpdating] = useState<boolean>(false)
 
   async function fetchTradingBalance() {
+    setUpdating(true)
+
     fetch(`${host}/balance/${userId}`)
       .then(response => response.json())
       .then(json => {
@@ -48,6 +58,7 @@ const Wallet: React.FC<Props> = ({
         setTransactions(json.transactions)
       })
       .catch(error => console.error(error))
+      .finally(() => setUpdating(false))
   }
 
   useEffect(() => {
@@ -160,21 +171,10 @@ const Wallet: React.FC<Props> = ({
   async function deposit() {
     try {
       if (!amount) throw new Error('Wrong amount')
-      /**
-[
-  'gallery', 'gorilla', 'plug',
-  'bind',    'reopen',  'soon',
-  'sphere',  'mail',    'muscle',
-  'custom',  'old',     'trade',
-  'giggle',  'direct',  'invest',
-  'plug',    'fork',    'forget',
-  'total',   'swamp',   'caution',
-  'illegal', 'hollow',  'cause'
-]
-*/
-      //const targetFacingAddress = 'EQAFwly7Ejq1YrO9LUNRkfMEtiVeY4dkUkowlApUODTWhLzM'
 
-      const targetFacingAddress = 'EQD5vcDeRhwaLgAvralVC7sJXI-fc2aNcMUXqcx-BQ-OWnOZ'
+      //const targetFacingAddress = 'EQAFwly7Ejq1YrO9LUNRkfMEtiVeY4dkUkowlApUODTWhLzM'
+      //const targetFacingAddress = 'EQD5vcDeRhwaLgAvralVC7sJXI-fc2aNcMUXqcx-BQ-OWnOZ'
+      const targetFacingAddress = 'UQBrCUMLfqEC6uloopksPpdOqyqp6iaoS4Uxm-ZKz_0lenmk'
       const destination = Address.parse(targetFacingAddress).toRawString()
 
       const body = beginCell()
@@ -188,7 +188,7 @@ const Wallet: React.FC<Props> = ({
           {
             address: destination,
             amount: toNano(amount).toString(),
-            payload: body.toBoc().toString("base64") // payload with comment in body
+            //payload: body.toBoc().toString("base64") // payload with comment in body
           }
         ]
       }
@@ -198,11 +198,16 @@ const Wallet: React.FC<Props> = ({
         notifications: ['before', 'success', 'error']
       })
       console.log(transactionRes)
+      console.log('Transaction hash:', transactionRes.boc)
 
       //updatePremium(transactionRes.boc)
       //alert(transactionRes.boc)
 
-      await createTransaction(transactionRes.boc)
+      if (transactionRes?.boc) {
+        const hash = Cell.fromBase64(transactionRes.boc).hash().toString('hex')
+        await createTransaction(hash)
+      }
+      else throw new Error('Transaction failed')
 
     } catch (error: any) {
       console.log(error.message)
@@ -286,7 +291,7 @@ const Wallet: React.FC<Props> = ({
 
 
   return (
-    userId !== 252672087
+    !isAdmin()
       ? null
       : <div style={{ height: '100%' }}>
         <TonConnectUIProvider
@@ -302,7 +307,11 @@ const Wallet: React.FC<Props> = ({
             <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', color: 'white', backgroundColor: 'rgba(0, 0, 0, 0.8)', padding: '10px', borderTopLeftRadius: '10px', borderTopRightRadius: '10px', }}>
               <div style={{ width: '50%' }}>
                 <button style={{ padding: '10px', border: 'none', borderRadius: '10px', backgroundColor: blue[600], color: 'white' }} onClick={handleConnection}>
-                  {userFriendlyAddress ? userFriendlyAddress.slice(0, 4) + '...' + userFriendlyAddress.slice(-4) : 'Connect Wallet'}
+                  {
+                    userFriendlyAddress
+                      ? userFriendlyAddress.slice(0, 4) + '...' + userFriendlyAddress.slice(-4)
+                      : 'Connect Wallet'
+                  }
                 </button>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', width: '50%' }}>
@@ -331,17 +340,27 @@ const Wallet: React.FC<Props> = ({
         <div style={{ marginTop: '5px', backgroundColor: 'rgba(0, 0, 0, 0.5)', color: 'white' }}>
           <div style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', color: 'white', backgroundColor: 'rgba(0, 0, 0, 0.8)', padding: '10px', marginTop: '2px' }}>
             <div>Balance: {walletBalance} TON</div>
-            <div><UpdateIcon onClick={fetchTradingBalance} /></div>
+            <div>
+              {
+                updating
+                  ? <CircularProgress size={24} />
+                  : <UpdateIcon onClick={fetchTradingBalance} />
+              }
+            </div>
           </div>
 
           <div style={{ maxHeight: '250px', overflowY: 'scroll', overflowX: 'hidden', padding: '10px' }}>
-            {transactions?.map((tx: any, i: number) => (
-              <div key={tx?._id} style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
-                <div style={{ width: '25%' }}>{tx?.amount}</div>
-                <div style={{ width: '50%' }}>{fDate(tx?.updatedAt)}</div>
-                <div style={{ width: '25%', display: 'flex', justifyContent: 'flex-end', color: txColor(tx?.status) }}>{tx?.status}</div>
-              </div>
-            ))}
+            {
+              updating
+                ? <><Skeleton /><Skeleton /><Skeleton /></>
+                : transactions?.map((tx: any, i: number) => (
+                  <div key={tx?._id} style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between' }}>
+                    <div style={{ width: '25%' }}>{tx?.amount}</div>
+                    <div style={{ width: '50%' }}>{fDate(tx?.updatedAt)}</div>
+                    <div style={{ width: '25%', display: 'flex', justifyContent: 'flex-end', color: txColor(tx?.status) }}>{tx?.status}</div>
+                  </div>
+                ))
+            }
           </div>
         </div>
 

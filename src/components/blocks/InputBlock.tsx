@@ -56,7 +56,7 @@ export default function InputBlock({
           <input type="text" value={amount} autoFocus onChange={handleChangeAmount} style={{ width: '100%', backgroundColor: 'transparent', border: '0', color: 'inherit', margin: '0 5px', outline: 'none', lineHeight: '1.5em', fontSize: 'large', }} />
           <div style={{ padding: '5px 0' }}>{coinSymbol}</div>
         </div>
-        <label style={{ fontSize: 'small' }}>{`Min bet amount is ${minBetValue} ${payrollCoin}`}</label>
+        <label style={{ fontSize: 'small' }}>{`Min bet amount is ${minBetValue} ${coinSymbol}`}</label>
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'row', marginTop: '10px', justifyContent: 'space-between' }}>

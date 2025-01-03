@@ -12,7 +12,7 @@ export default function LiveBlock({
   payrollCoin,
   lastPrice,
   diffPrice,
-  isSwitchingCoin = false,
+  //isSwitchingCoin = false,
 }: any) {
   prizePool.id = data.id
   prizePool.payrollCoin = payrollCoin

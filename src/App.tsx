@@ -66,7 +66,7 @@ function Menu({ handleClickMenu }: any) {
 }
 
 function isAdmin() {
-  return [252672087, 275294536, 6915261864, 7377461500].includes(userId)
+  return [252672087, 275294536, 6915261864, 7377461500, 6485072691].includes(userId)
 }
 
 function App() {

@@ -49,6 +49,7 @@ const Wallet: React.FC<Props> = ({
 
   async function fetchTradingBalance() {
     setUpdating(true)
+    await holdOn(2000)
 
     fetch(`${host}/balance/${userId}`)
       .then(response => response.json())

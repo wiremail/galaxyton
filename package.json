@@ -10,7 +10,7 @@
     "preview": "vite preview",
     "configbot": "node configure.js",
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d dist"
+    "deploy": "main -d dist"
   },
   "dependencies": {
     "@aws-crypto/sha256-js": "^5.0.0",

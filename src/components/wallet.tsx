@@ -17,7 +17,7 @@ const dev = import.meta.env.VITE_ENV === 'development'
 const host = dev ? import.meta.env.VITE_HOST_DEV : import.meta.env.VITE_HOST
 const defaultUserId = dev ? 252672087 : 0
 const userId = WebApp?.initDataUnsafe?.user?.id || defaultUserId
-const manifestUrl = "https://wiremail.github.io/galaxyton/tonconnect-manifest.json"
+const manifestUrl = "https://galaxyton.com/static/tonconnect-manifest.json"
 
 function isAdmin() {
   return [252672087, 275294536, 6915261864, 7377461500, 6485072691].includes(userId)

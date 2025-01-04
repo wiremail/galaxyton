@@ -8,7 +8,7 @@ import '@fontsource/roboto/400.css'
 import '@fontsource/roboto/500.css'
 import '@fontsource/roboto/700.css'
 
-const manifestUrl = "https://wiremail.github.io/galaxyton/tonconnect-manifest.json"
+const manifestUrl = "https://galaxyton.com/static/tonconnect-manifest.json"
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { refetchOnWindowFocus: false } },

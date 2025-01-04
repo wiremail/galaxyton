@@ -17,6 +17,7 @@ const dev = import.meta.env.VITE_ENV === 'development'
 const host = dev ? import.meta.env.VITE_HOST_DEV : import.meta.env.VITE_HOST
 const defaultUserId = dev ? 252672087 : 0
 const userId = WebApp?.initDataUnsafe?.user?.id || defaultUserId
+const manifestUrl = "https://galaxyton.com/static/tonconnect-manifest.json"
 
 function isAdmin() {
   return [252672087, 275294536, 6915261864, 7377461500, 6485072691].includes(userId)
@@ -291,14 +292,15 @@ const Wallet: React.FC<Props> = ({
   }
 
 
+
+
   return (
     !isAdmin()
       ? null
       : <div style={{ height: '100%' }}>
         <TonConnectUIProvider
-          actionsConfiguration={{
-            twaReturnUrl: 'https://t.me/galaxyton_bot'
-          }}
+          manifestUrl={manifestUrl}
+          actionsConfiguration={{ twaReturnUrl: 'https://t.me/galaxyton_bot' }}
         >
           {/* <div style={{ display: 'flex', justifyContent: 'end', alignItems: 'center', padding: '10px' }}>
           <TonConnectButton className='ton-connect-page__button' />
